@@ -41,15 +41,22 @@ vec3 colorGrading(in vec3 col) {
 
 }
 
+void SoftVignette(inout vec3 color) {
+    float dist = distance(texcoord.st, vec2(0.5)) * 2.0;
+    dist /= 2.2142f;
 
+    dist = pow(dist, 1.1f);
 
+    color.rgb *= (1.0f - dist) / 0.75;
 
+}
 
 void main() {
     vec3 color = texture2D(colortex0, texcoord.st).rgb;
 
-
     color = colorGrading(color);
+
+    SoftVignette(color);
 
     gl_FragData[0] = vec4(color, 1.0);
 }

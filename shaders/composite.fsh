@@ -21,7 +21,10 @@ uniform mat4 gbufferProjection;
 
 uniform mat4 shadowModelView;
 
+#include "/lib/poisson.glsl"
+
 const int noiseTexResolution = 32;
+const int noiseTextureResolution = 256; 
 
 const bool 		shadowHardwareFiltering0 = true;
 
@@ -131,14 +134,62 @@ vec3 getShadowSpacePosition(in vec2 coord) {
     return positionShadowSpace.xyz * 0.5 + 0.5;
 }
 
+mat2 getRotationMatrix(in vec2 coord) {
+    float rotationAmount = texture2D(
+        noisetex,
+        coord * vec2(
+            viewWidth / noiseTextureResolution,
+            viewHeight / noiseTextureResolution
+        )
+    ).r;
+    return mat2(
+        cos(rotationAmount), -sin(rotationAmount),
+        sin(rotationAmount), cos(rotationAmount)
+    );
+}
+
+#define PCSS_SAMPLE_COUNT 3
+
+float getPenumbraWidth(in vec3 shadowCoord, in sampler2D shadowTexture, in mat2 rot) {
+    float dFragment = shadowCoord.z; //distance from pixel to light
+    float dBlocker = 0.0; //distance from blocker to light
+    float penumbra = 0.0;
+    
+    float shadowMapSample; //duh
+    float numBlockers = 0.0;
+
+    float lightSize  = 125.0;
+    float searchSize = lightSize / 70.0;
+
+    for (int x = -PCSS_SAMPLE_COUNT; x < PCSS_SAMPLE_COUNT; x++) {
+        for (int y = -PCSS_SAMPLE_COUNT; y < PCSS_SAMPLE_COUNT; y++) {
+            vec2 sampleCoord = shadowCoord.st + rot * (vec2(x, y) * searchSize / (shadowMapResolution));
+            shadowMapSample = texture2D(shadowTexture, sampleCoord, 2.0).r;
+
+            dBlocker += shadowMapSample;
+            numBlockers += 1.0;
+        }
+    }
+
+    if(numBlockers > 0.0) {
+		dBlocker /= numBlockers;
+		penumbra = (dFragment - dBlocker) * lightSize;
+	}
+
+    return clamp(max(penumbra, 0.5), 0.0, lightSize);
+}
+
 
 //Lighting and shadow code
 vec3 getShadowColor(in vec2 coord) {
     vec3 shadowCoord = getShadowSpacePosition(coord);
     vec3 shadowColor = vec3(0.0);
-    for(int y = -1; y < 2; y++) {
-        for(int x = -1; x <2; x++) {
-            vec2 offset = vec2(x, y) / shadowMapResolution;
+    mat2 rotationMatrix = getRotationMatrix(coord);
+    float shadowDist = getPenumbraWidth(shadowCoord, shadowtex0, rotationMatrix);
+    for(int i = 0; i < samplePoints.length(); i++) {
+            vec2 offset = samplePoints[i] / shadowMapResolution;
+            offset = rotationMatrix * offset;
+            offset *= shadowDist;
             float shadowMapSample = texture2D(shadowtex0, shadowCoord.st + offset).r;
             float visibility = step(shadowCoord.z - shadowMapSample, 0.001);
             vec3 sunsetColor = vec3(1.0, 0.5, 0.4);
@@ -147,10 +198,9 @@ vec3 getShadowColor(in vec2 coord) {
             vec3 colorSample = texture2D(shadowcolor0, shadowCoord.st + offset).rgb;
             vec3 mixShadowCol = mix(colorSample, vec3(sunsetColor*TimeSunrise + dayColor*TimeNoon + sunsetColor*TimeSunset + nightColor*TimeMidnight), visibility);
             shadowColor += mixShadowCol;
-        }
     }
     
-    return shadowColor * vec3(0.199);
+    return vec3(shadowColor) / samplePoints.length();
     
 }
 

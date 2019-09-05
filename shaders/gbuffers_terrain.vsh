@@ -295,9 +295,6 @@ WATER_VEGETATION
 	color = gl_Color;
 	
 	gl_Position = gl_ProjectionMatrix * (gl_ModelViewMatrix * position);
-                  #ifdef TAA
-                  gl_Position.xy = taaJitter(gl_Position.xy,gl_Position.w);
-                  #endif
 
 	mat3 tbnMatrix = mat3(tangent.x, binormal.x, normal.x,
                           tangent.y, binormal.y, normal.y,

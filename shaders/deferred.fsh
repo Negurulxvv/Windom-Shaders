@@ -47,12 +47,14 @@ float ld(float depth) {
 void main(){
 	vec4 color = texture2D(colortex0,texcoord.xy);
 	float z = texture2D(depthtex0,texcoord.xy).r;
+	float depth = texture2D(depthtex0, texcoord.st).r;
 	
+	bool isTerrain = depth < 1.0;
 	//Dither
 	float dither = fract(bayer64(gl_FragCoord.xy)+ frameCounter/8.0);
 
 	#ifdef AmbientOcclusion
-	color.rgb *= dbao(depthtex0, dither);
+	if (isTerrain) color.rgb *= dbao(depthtex0, dither);
 	#endif
 
 /*DRAWBUFFERS:04*/
