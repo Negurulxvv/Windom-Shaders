@@ -12,7 +12,7 @@ void main() {
         discard;
     }
 
-    vec3 fragColor = color.rgb * texture2D(tex, texcoord.st).rgb;
+    vec4 fragColor = color * texture2D(tex, texcoord.st);
 
-    gl_FragData[0] = vec4(fragColor, 1.0);
+    gl_FragData[0] = fragColor;
 }

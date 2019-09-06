@@ -8,7 +8,7 @@ vec2 offsetDist(float x, int s){
 float dbao(sampler2D depth, float dither){
 	float ao = 0.0;
 
-	int samples = 5;
+	int samples = 3;
 	dither = fract(frameTimeCounter * 4.0 + dither);
 
 	float d = texture2D(depth,texcoord.xy).r;

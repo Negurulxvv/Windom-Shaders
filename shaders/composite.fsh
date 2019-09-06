@@ -5,7 +5,7 @@
 const int RGBA16                 = 1;             
 const int gcolorFormat           =  RGBA16;  
 const int colortex5Format        =  RGBA16;
-const int shadowMapResolution    = 2048; //Resolution of the Shadows
+#define shadowMapResolution 1024 //[1024 2048 4096]
 const bool colortex5Clear = false;
 
 uniform sampler2D gcolor;
@@ -36,21 +36,13 @@ const bool 		shadowcolor0Nearest = false;
 
 const float shadowDistance = 128.0; //[32.0 64.0 128.0 256.0 512.0 1024.0]
 const float shadowMapBias = 0.85;
-const float stp = 1.0;			//size of one step for raytracing algorithm
-const float ref = 0.05;			//refinement multiplier
-const float inc = 2.2;			//increasement factor at each step
-const int maxf = 10;				//number of refinements
 
-
-uniform sampler2D gdepthtex;
 uniform sampler2D depthtex1;
 uniform sampler2D depthtex0;
 uniform sampler2D colortex0;
 uniform sampler2D shadowtex0;
 uniform sampler2D shadowcolor0;
 uniform sampler2D noisetex;
-uniform sampler2D composite;
-uniform sampler2D colortex4;
 uniform sampler2D normals;
 
 
@@ -59,28 +51,20 @@ uniform int isEyeInWater;
 uniform int worldTime;
 
 uniform float aspectRatio;
-uniform float blindness;
 uniform float far;
 uniform float frameTimeCounter;
 uniform float near;
 uniform float rainStrength;
 uniform float timeAngle;
-uniform float timeBrightness;
 uniform float viewWidth;
 uniform float viewHeight;
 
 uniform vec3 skyColor;
 uniform vec3 cameraPosition;
+
 uniform mat4 shadowProjection;
 
-
 varying vec3 lightVector;
-varying vec3 ambient_color;
-varying vec3 sky_color;
-varying vec3 fog_color;
-varying vec3 sunlight;
-varying vec3 colorWaterMurk;
-varying vec3 colorWaterBlue;
 varying vec4 texcoord;
 
 
@@ -122,6 +106,23 @@ vec4 getWorldSpacePosition(in vec2 coord) {
     return positionWorldSpace;
 }
 
+#define SHADOW_MAP_BIAS 0.85
+vec4 BiasShadowProjection(in vec4 projectedShadowSpacePosition) {
+
+	vec2 pos = abs(projectedShadowSpacePosition.xy * 1.165);
+	vec2 posSQ = pos*pos;
+	
+	float dist = pow(posSQ.x*posSQ.x*posSQ.x + posSQ.y*posSQ.y*posSQ.y, 1.0 / 6.0);
+
+	float distortFactor = (1.0 - SHADOW_MAP_BIAS) + dist * SHADOW_MAP_BIAS;
+
+	projectedShadowSpacePosition.xy /= distortFactor*0.92;
+
+
+
+	return projectedShadowSpacePosition;
+}
+
 //What gets the shadow position
 vec3 getShadowSpacePosition(in vec2 coord) {
     vec4 positionWorldSpace = getWorldSpacePosition(coord);
@@ -129,7 +130,7 @@ vec3 getShadowSpacePosition(in vec2 coord) {
     positionWorldSpace.xyz -= cameraPosition;
     vec4 positionShadowSpace = shadowModelView * positionWorldSpace;
     positionShadowSpace = shadowProjection * positionShadowSpace;
-    positionShadowSpace /= positionShadowSpace.w;
+    positionShadowSpace = BiasShadowProjection(positionShadowSpace);
 
     return positionShadowSpace.xyz * 0.5 + 0.5;
 }
@@ -148,7 +149,7 @@ mat2 getRotationMatrix(in vec2 coord) {
     );
 }
 
-#define PCSS_SAMPLE_COUNT 3
+#define PCSS_SAMPLE_COUNT 2
 
 float getPenumbraWidth(in vec3 shadowCoord, in sampler2D shadowTexture, in mat2 rot) {
     float dFragment = shadowCoord.z; //distance from pixel to light
@@ -158,8 +159,8 @@ float getPenumbraWidth(in vec3 shadowCoord, in sampler2D shadowTexture, in mat2 
     float shadowMapSample; //duh
     float numBlockers = 0.0;
 
-    float lightSize  = 125.0;
-    float searchSize = lightSize / 70.0;
+    float lightSize  = 225.0;
+    float searchSize = lightSize / 260.0;
 
     for (int x = -PCSS_SAMPLE_COUNT; x < PCSS_SAMPLE_COUNT; x++) {
         for (int y = -PCSS_SAMPLE_COUNT; y < PCSS_SAMPLE_COUNT; y++) {
@@ -215,9 +216,6 @@ vec3 calculateLitSurface(in vec3 color) {
 
 
 void main() {
-    vec4 sample4 = texture2D(colortex4, texcoord.st);
-    vec2 lightmap = sample4.xy;
-
 
     getDepth = texture2D(depthtex1, texcoord.st).r;
     vec3 finalComposite = texture2D(colortex0, texcoord.st).rgb;

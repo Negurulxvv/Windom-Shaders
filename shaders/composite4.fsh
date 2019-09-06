@@ -1,9 +1,7 @@
 #version 120
 #extension GL_ARB_shader_texture_lod : enable
 
-
-//#define MotionBlur
-
+#define MotionBlur
 
 varying vec2 texcoord;
 
@@ -30,7 +28,7 @@ uniform sampler2D depthtex1;
 void main() {
     vec3 color = texture2D(colortex0, texcoord.st).rgb;
   
-	float hand = float(texture2D(depthtex1,texcoord.xy).r < 0.56);
+    float hand = float(texture2D(depthtex1,texcoord.xy).r < 0.56);
 
     //Motion Blur
 	#ifdef MotionBlur

@@ -4,8 +4,7 @@
 
 //INSPIRED BY BSL CAPT TATSU CODE
 
-
-//#define DOField
+#define DOField
 
 varying vec2 texcoord;
 

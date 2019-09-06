@@ -1,4 +1,4 @@
-#define MotionBlurAmount 1.00 //[0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00]
+#define MotionBlurAmount 0.75 //[0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00]
 
 //Dithering from Jodie
 float bayer2(vec2 a){
@@ -41,7 +41,7 @@ vec3 motionBlur (vec3 color, float hand){
 		velocity = velocity/(1.0+length(velocity))*MotionBlurAmount*0.02;
 		
 		vec2 coord = texcoord.st-velocity*(3.5+bayer64(gl_FragCoord.xy));
-		for (int i = 0; i < 9; ++i, coord += velocity){
+		for (int i = 0; i < 6; ++i, coord += velocity){
 			vec2 coordb = clamp(coord,pixel,1.0-pixel);
 			vec3 temp = texture2DLod(colortex0, coordb,0).rgb;
 			mblur += temp;
