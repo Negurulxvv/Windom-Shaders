@@ -16,6 +16,12 @@ float getIsTransparent(in float materialId) {
     if(materialId == 79.0) {   // ice
         return 1.0;
     }
+    if(materialId == 8.0) {   //water
+        return 1.0;
+    }
+    if(materialId == 9.0) {   //water too
+        return 1.0;
+    }
     return 0.0;
 }
 
