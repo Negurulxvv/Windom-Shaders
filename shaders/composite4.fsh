@@ -1,7 +1,7 @@
 #version 120
 #extension GL_ARB_shader_texture_lod : enable
 
-#define MotionBlur
+//#define MotionBlur
 
 varying vec2 texcoord;
 
@@ -23,7 +23,9 @@ uniform mat4 gbufferPreviousProjection;
 uniform sampler2D colortex0;
 uniform sampler2D depthtex1;
 
+#ifdef MotionBlur
 #include "/lib/motionBlur.glsl"
+#endif
 
 void main() {
     vec3 color = texture2D(colortex0, texcoord.st).rgb;

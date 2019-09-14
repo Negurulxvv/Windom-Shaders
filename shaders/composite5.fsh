@@ -9,8 +9,10 @@ const int RGBA16                 = 1;
 const int colortex5Format        =  RGBA16;
 const bool colortex5Clear = false;
 
+#ifdef TAA
 uniform float viewHeight;
 uniform float viewWidth;
+#endif
 uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 
@@ -19,7 +21,9 @@ varying vec4 texcoord;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 
+#ifdef TAA
 #include "/lib/taa.glsl"
+#endif
 
 float getDepth = 0.0;
 

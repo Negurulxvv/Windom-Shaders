@@ -33,8 +33,10 @@ float ld(float depth) {
    return (2.0 * near) / (far + near - depth * (far - near));
 }
 
+#ifdef AmbientOcclusion
 #include "/lib/dither.glsl"
 #include "/lib/SSAO.glsl"
+#endif
 
 void main(){
 	vec4 color = texture2D(colortex0,texcoord.xy);

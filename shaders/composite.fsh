@@ -5,8 +5,7 @@
 const int RGBA16                 = 1;             
 const int gcolorFormat           =  RGBA16;  
 const int colortex5Format        =  RGBA16;
-#define shadowMapResolution 1024 //[1024 2048 4096]
-const bool colortex5Clear = false;
+const int shadowMapResolution = 1024; //[1024 2048 4096]
 
 uniform sampler2D gcolor;
 uniform sampler2D gnormal;
@@ -26,13 +25,7 @@ uniform mat4 shadowModelView;
 const int noiseTexResolution = 32;
 const int noiseTextureResolution = 256; 
 
-const bool 		shadowHardwareFiltering0 = true;
-
-const bool 		shadowcolor0Mipmap = true;
-const bool 		shadowcolor0Nearest = false;
-
 #define ShadowColor
-
 
 const float shadowDistance = 128.0; //[32.0 64.0 128.0 256.0 512.0 1024.0]
 const float shadowMapBias = 0.85;
@@ -208,7 +201,7 @@ vec3 getShadowColor(in vec2 coord) {
 
 vec3 calculateLitSurface(in vec3 color) {
     vec3 sunlightAmount = getShadowColor(texcoord.st);
-    float ambientLighting = (0.55*TimeSunrise + 0.35*TimeNoon + 0.55*TimeSunset + 0.55*TimeMidnight); 
+    vec3 ambientLighting = vec3(0.55*TimeSunrise + 0.35*TimeNoon + 0.55*TimeSunset + 0.55*TimeMidnight); 
 
 
     return color * (sunlightAmount + ambientLighting);

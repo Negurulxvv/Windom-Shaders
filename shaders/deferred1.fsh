@@ -4,7 +4,7 @@
 
 //INSPIRED BY BSL CAPT TATSU CODE
 
-#define DOField
+//#define DOField
 
 varying vec2 texcoord;
 
@@ -16,7 +16,9 @@ uniform float centerDepthSmooth;
 uniform sampler2D colortex0;
 uniform sampler2D depthtex1;
 
+#ifdef DOField
 #include "/lib/DepthOfField.glsl"
+#endif
 
 void main() {
 	vec3 color = texture2D(colortex0,texcoord.xy).rgb;

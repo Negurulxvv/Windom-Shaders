@@ -23,13 +23,11 @@ vec3 colorGrading(in vec3 col) {
     vec3 redCol = vec3(0.6, 0.8, 0.28);
 
     vec3 regular = vec3(0.8);
-    vec3 regular2 = vec3(0.94);
 
-    vec3 purpleColor = mix(regular, blueCol, redCol);
-
+    vec3 purpleCol = mix(regular, blueCol, redCol);
 
     vec3 mixBlueCol = mix(blueCol, col, regular);
-    vec3 mixRedCol = mix(purpleColor, col, regular);
+    vec3 mixRedCol = mix(purpleCol, col, regular);
 
     vec3 mixDailyCol = vec3(mixRedCol*TimeSunrise + mixBlueCol*TimeNoon + mixRedCol*TimeSunset + mixBlueCol*TimeMidnight);
 
